@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/sidebar"
 import { columns } from "./columns"
 import { Category } from "@/types/Category"
+import { CategoryDialogMenu } from "./category-dialog-menu"
 
 
 const data: Category[] = [
@@ -62,7 +63,12 @@ export default function CategoriesPage() {
                 <div className="flex flex-1 flex-col">
                     <div className="@container/main flex flex-1 flex-col gap-2">
                         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-                            <DataTable columns={columns} data={data} />
+                            <div className="px-4 lg:px-6">
+                                <div className="flex flex-col items-end">
+                                    <CategoryDialogMenu label="Add Category" />
+                                </div>
+                                <DataTable columns={columns} data={data} />
+                            </div>
                         </div>
                     </div>
                 </div>

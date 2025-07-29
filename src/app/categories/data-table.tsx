@@ -74,8 +74,7 @@ export function DataTable<TData, TValue>({
   })
 
   return (
-    <div className="flex items-center justify-between px-4 lg:px-6">
-
+    <div className="flex items-center justify-between">
       <div className="w-full">
         <div className="flex items-center py-4">
           <Input

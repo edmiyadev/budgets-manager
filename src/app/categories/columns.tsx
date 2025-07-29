@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Category } from "@/types/Category"
+import { CategoryDialogMenu } from "./category-dialog-menu"
 
 export const columns: ColumnDef<Category>[] = [
   {
@@ -98,15 +99,12 @@ export const columns: ColumnDef<Category>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
-            {/* <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(category.id)}
-            >
-              Copy payment ID
-            </DropdownMenuItem> */}
-            <DropdownMenuItem>
-              <Edit2Icon />
-              Edit
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="w-full">
+              <CategoryDialogMenu variant="ghost" size="sm" label="Edit Category">
+                <Edit2Icon /> Edit
+              </CategoryDialogMenu>
             </DropdownMenuItem>
+
             <DropdownMenuItem variant="destructive">
               <Trash2Icon />
               Delete
