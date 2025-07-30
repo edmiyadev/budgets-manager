@@ -1,18 +1,11 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { ArrowUpDown, Edit2Icon, MoreHorizontal, Trash2Icon } from "lucide-react"
-
+import { ArrowUpDown, Edit2Icon, Trash2Icon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Category } from "@/types/Category"
-import { CategoryDialogMenu } from "./category-dialog-menu"
+import { Category } from "@/types/category"
+import { CategoryModal } from "@/app/categories/category-modal"
 
 export const columns: ColumnDef<Category>[] = [
   {
@@ -86,31 +79,29 @@ export const columns: ColumnDef<Category>[] = [
   },
   {
     id: "actions",
-    enableHiding: false,
+    accessorKey: "actions",
+    header: () => <div className="text-center">Actions</div>,
+    enableHiding: true,
     cell: ({ row }) => {
       const category = row.original
 
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="w-full">
-              <CategoryDialogMenu variant="ghost" size="sm" label="Edit Category">
-                <Edit2Icon /> Edit
-              </CategoryDialogMenu>
-            </DropdownMenuItem>
+        <div className="flex items-center justify-center gap-2">
 
-            <DropdownMenuItem variant="destructive">
-              <Trash2Icon />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          <CategoryModal variant="ghost" mode="edit" category={category}>
+            <Edit2Icon className="text-primary" />
+          </CategoryModal>
+
+          <Button
+            variant="ghost"
+            onClick={() => {
+              // TODO: Implement delete functionality
+              console.log("Delete category:", category)
+            }}
+          >
+            <Trash2Icon className="text-destructive" />
+          </Button>
+        </div>
       )
     },
   },

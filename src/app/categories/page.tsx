@@ -5,9 +5,9 @@ import {
     SidebarInset,
     SidebarProvider,
 } from "@/components/ui/sidebar"
-import { columns } from "./columns"
-import { Category } from "@/types/Category"
-import { CategoryDialogMenu } from "./category-dialog-menu"
+import { columns } from "@/app/categories/columns"
+import { Category } from "@/types/category"
+import { CategoryModal } from "@/app/categories/category-modal"
 
 
 const data: Category[] = [
@@ -65,7 +65,7 @@ export default function CategoriesPage() {
                         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
                             <div className="px-4 lg:px-6">
                                 <div className="flex flex-col items-end">
-                                    <CategoryDialogMenu label="Add Category" />
+                                    <CategoryModal />
                                 </div>
                                 <DataTable columns={columns} data={data} />
                             </div>

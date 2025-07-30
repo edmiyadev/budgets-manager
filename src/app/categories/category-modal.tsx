@@ -31,11 +31,13 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { useState } from "react"
+import { Category } from "@/types/category"
 
 interface Props {
     variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"
-    label?: string,
-    size?: "default" | "sm" | "lg" | "icon"
+    size?: "default" | "sm" | "lg" | "icon",
+    category?: Category | null
+    mode?: 'create' | 'edit'
     children?: React.ReactNode | null
 }
 
@@ -45,17 +47,22 @@ const formSchema = z.object({
     type: z.enum(["income", "expense"]),
 })
 
-
-export function CategoryDialogMenu({ variant = "default", label = "", size = "default", children }: Props) {
+export function CategoryModal({
+    variant = "default",
+    size = "default",
+    children,
+    category,
+    mode = 'create',
+}: Props) {
 
     const [open, setOpen] = useState(false);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            name: "",
-            amount: 0,
-            type: "income",
+            name: category?.name || "",
+            amount: category?.amount || 0,
+            type: category?.type || "income",
         },
     })
 
@@ -68,16 +75,22 @@ export function CategoryDialogMenu({ variant = "default", label = "", size = "de
         console.log(values)
     }
 
+    const title = mode === 'create' ? 'Create Category' : 'Edit Category'
+    const submitLabel = mode === 'create' ? 'Create' : 'Update'
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button size={size} variant={variant}>{children ? children : label}</Button>
+                <Button size={size} variant={variant}>{children ? children : title}</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>{label}</DialogTitle>
+                    <DialogTitle>{title}</DialogTitle>
                     <DialogDescription>
-                        {/* Make changes to your profile here. Click save when you're done. */}
+                        {mode === 'create'
+                            ? 'Add a new category to organize your transactions.'
+                            : 'Make changes to your category details.'
+                        }
                     </DialogDescription>
                 </DialogHeader>
 
@@ -147,7 +160,7 @@ export function CategoryDialogMenu({ variant = "default", label = "", size = "de
                             <DialogClose asChild>
                                 <Button variant="outline" type="button">Cancel</Button>
                             </DialogClose>
-                            <Button type="submit">Save changes</Button>
+                            <Button type="submit">{submitLabel}</Button>
                         </DialogFooter>
                     </form>
                 </Form>
