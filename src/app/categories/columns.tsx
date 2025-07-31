@@ -6,6 +6,21 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Category } from "@/types/category"
 import { CategoryModal } from "@/app/categories/category-modal"
+import { Badge } from "@/components/ui/badge"
+
+interface StyleProps {
+  type: {
+    income: string
+    expense: string
+  }
+}
+
+const style: StyleProps = {
+  type: {
+    income: "bg-green-400 border-2 border-green-600 text-green-800 text-md font-semibold",
+    expense: "bg-red-400 border-2 border-red-600 text-red-800 text-md font-semibold",
+  }
+}
 
 export const columns: ColumnDef<Category>[] = [
   {
@@ -60,7 +75,7 @@ export const columns: ColumnDef<Category>[] = [
         </Button>
       )
     },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("type")}</div>,
+    cell: ({ row }) => <Badge className={"lowercase " + style.type[row.getValue("type") as keyof typeof style.type]}>{row.getValue("type")}</Badge>,
   },
   {
     accessorKey: "amount",
