@@ -17,8 +17,8 @@ interface StyleProps {
 
 const style: StyleProps = {
   type: {
-    income: "bg-green-400 border-2 border-green-600 text-green-800 text-md font-semibold",
-    expense: "bg-red-400 border-2 border-red-600 text-red-800 text-md font-semibold",
+    income: "text-green-800 bg-green-200 dark:bg-green-100",
+    expense: "text-red-800 bg-red-200 dark:bg-red-100",
   }
 }
 
