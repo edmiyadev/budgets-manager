@@ -1,52 +1,31 @@
 import { AppSidebar } from "@/components/app-sidebar"
 import { DataTable } from "@/app/categories/data-table"
 import { SiteHeader } from "@/components/site-header"
-import {
-    SidebarInset,
-    SidebarProvider,
-} from "@/components/ui/sidebar"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { columns } from "@/app/categories/columns"
-import { Category } from "@/types/category"
 import { CategoryModal } from "@/app/categories/category-modal"
+import { getPaginatedCategories } from "@/actions/categories/categories-pagination"
+import { redirect } from "next/navigation"
 
 
-const data: Category[] = [
-    {
-        id: "m5gr84i9",
-        name: "Food & Dining",
-        amount: 316,
-        type: "expense",
-    },
-    {
-        id: "3u1reuv4",
-        name: "Salary",
-        amount: 242,
-        type: "income",
-    },
-    {
-        id: "derv1ws0",
-        name: "Transportation",
-        amount: 837,
-        type: "expense",
-    },
-    {
-        id: "5kma53ae",
-        name: "Freelance",
-        amount: 874,
-        type: "income",
-    },
-    {
-        id: "bhqecj4p",
-        name: "Entertainment",
-        amount: 721,
-        type: "expense",
-    },
-]
+interface Props {
+    searchParams: {
+        page?: string;
+        take?: string;
+    }
+}
 
-export default function CategoriesPage() {
+export default async function CategoriesPage({ searchParams }: Props) {
 
-    // cargar los datos asíncronos
-    // const data = await getData();
+    const resolvedSearchParams = await searchParams;
+
+    const page = resolvedSearchParams.page ? parseInt(resolvedSearchParams.page) : 1;
+    const take = resolvedSearchParams.take ? parseInt(resolvedSearchParams.take) : 5;
+
+    const categories = await getPaginatedCategories({ page, take });
+    console.log("Categories data:", categories);
+    
+    if (categories.data.length === 0) redirect('/categories');
 
     return (
         <SidebarProvider
@@ -67,7 +46,7 @@ export default function CategoriesPage() {
                                 <div className="flex flex-col items-end">
                                     <CategoryModal />
                                 </div>
-                                <DataTable columns={columns} data={data} />
+                                <DataTable columns={columns} data={categories} />
                             </div>
                         </div>
                     </div>

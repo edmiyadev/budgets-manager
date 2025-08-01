@@ -1,8 +1,10 @@
-type CategoryType = "income" | "expense"
+export type CategoryType = "INCOME" | "EXPENSE"
 
 export interface Category {
   id: string
   name: string
   amount: number,
-  type: CategoryType
+  type: CategoryType,
+  createdAt?: Date,
+  updatedAt?: Date,
 }
