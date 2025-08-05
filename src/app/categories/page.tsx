@@ -4,29 +4,9 @@ import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { columns } from "@/app/categories/columns"
 import { CategoryModal } from "@/app/categories/category-modal"
-import { getPaginatedCategories } from "@/actions/categories/categories-pagination"
-import { redirect } from "next/navigation"
 
-
-interface Props {
-    searchParams: {
-        page?: string;
-        take?: string;
-    }
-}
-
-export default async function CategoriesPage({ searchParams }: Props) {
-
-    const resolvedSearchParams = await searchParams;
-
-    const page = resolvedSearchParams.page ? parseInt(resolvedSearchParams.page) : 1;
-    const take = resolvedSearchParams.take ? parseInt(resolvedSearchParams.take) : 5;
-
-    const categories = await getPaginatedCategories({ page, take });
-    console.log("Categories data:", categories);
-    
-    if (categories.data.length === 0) redirect('/categories');
-
+export default async function CategoriesPage() {
+    54
     return (
         <SidebarProvider
             style={
@@ -46,7 +26,7 @@ export default async function CategoriesPage({ searchParams }: Props) {
                                 <div className="flex flex-col items-end">
                                     <CategoryModal />
                                 </div>
-                                <DataTable columns={columns} data={categories} />
+                                <DataTable columns={columns} />
                             </div>
                         </div>
                     </div>

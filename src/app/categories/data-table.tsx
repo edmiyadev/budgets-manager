@@ -1,19 +1,20 @@
 "use client"
 
-import * as React from "react"
 import {
   ColumnDef,
   ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
+  PaginationState,
   SortingState,
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table"
 import { ChevronDown } from "lucide-react"
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { usePathname, useSearchParams, useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -32,48 +33,84 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { DataTablePagination } from "@/components/pagination"
+import { getPaginatedCategories } from "@/actions/categories/categories-pagination"
+import { Category } from "@/types/category"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: {
-    data: TData[]
-    currentPage: number
-    take: number
-    totalPages: number
-  }
+interface DataTableProps<TValue> {
+  columns: ColumnDef<Category, TValue>[]
 }
 
-export function DataTable<TData, TValue>({
-  columns,
-  data,
-}: DataTableProps<TData, TValue>
+const DEFAULT_PAGE_SIZE = 10;
+const DEFAULT_PAGE = 1;
+const OPTIONS_PAGE_SIZE = [10, 20, 25, 30, 40, 50];
 
-) {
-  const [pagination, setPagination] = React.useState({
-    pageIndex: data.currentPage,
-    pageSize: data.take,
+export function DataTable<TValue>({
+  columns,
+}: DataTableProps<TValue>) {
+
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const currentPage = Number(searchParams.get('page')) || DEFAULT_PAGE;
+  const currentPageSize = Number(searchParams.get('take')) || DEFAULT_PAGE_SIZE;
+
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [rowSelection, setRowSelection] = useState({})
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: currentPage - 1,
+    pageSize: currentPageSize,
   })
 
-  console.log("DataTable data:", pagination);
-  
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
+  const dataQuery = useQuery({
+    queryKey: ['categories', currentPage, currentPageSize],
+    queryFn: () => getPaginatedCategories({
+      pageIndex: currentPage - 1,
+      pageSize: currentPageSize
+    }),
+    placeholderData: keepPreviousData,
+  })
 
-  const table = useReactTable({
-    data: data.data,
+
+  const redirectToValidPage = useCallback((pageIndex: number, pageSize: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', (pageIndex + 1).toString());
+    params.set('take', pageSize.toString());
+    router.push(`${pathname}?${params.toString()}`);
+  }, [searchParams, pathname, router]);
+
+
+  const handlePaginationChange = useCallback((updater: any) => {
+    const newPagination = typeof updater === 'function' ? updater(pagination) : updater; // pattern for state setters
+
+    const params = new URLSearchParams(searchParams);
+    params.set('page', (newPagination.pageIndex + 1).toString());
+    params.set('take', newPagination.pageSize.toString());
+
+    setPagination(newPagination);
+    router.push(`${pathname}?${params.toString()}`);
+  }, [pagination, searchParams, pathname, router]);
+
+
+  const defaultData = useMemo(() => [], [])
+
+  const table = useReactTable<Category>({
+    data: dataQuery.data?.rows ?? defaultData,
     columns,
+    pageCount: dataQuery.data?.pageCount ?? 0,
+    rowCount: dataQuery.data?.rowCount ?? 0,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
-    onPaginationChange: setPagination,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    onPaginationChange: handlePaginationChange, // use custom handler
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    manualPagination: true,
     state: {
       sorting,
       columnFilters,
@@ -82,6 +119,28 @@ export function DataTable<TData, TValue>({
       pagination,
     },
   })
+
+
+  useEffect(() => {
+    if (currentPage < 1 || !OPTIONS_PAGE_SIZE.includes(currentPageSize)) {
+      redirectToValidPage(0, 10);
+    }
+
+    setPagination({
+      pageIndex: currentPage - 1,
+      pageSize: currentPageSize,
+    });
+  }, [currentPage, currentPageSize, dataQuery.data?.pageCount]);
+
+
+  useEffect(() => {
+    if (dataQuery.data?.pageCount !== undefined &&
+      dataQuery.data.pageCount > 0 &&
+      currentPage > dataQuery.data.pageCount) {
+      redirectToValidPage(0, currentPageSize);
+    }
+  }, [dataQuery.data?.pageCount, currentPage, currentPageSize, redirectToValidPage])
+
 
   return (
     <div className="flex items-center justify-between">

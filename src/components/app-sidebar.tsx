@@ -53,7 +53,7 @@ const data = {
     },
     {
       title: "Categorias",
-      url: "/categories",
+      url: "/categories/?page=1&take=10",
       icon: IconChartBar,
     },
     // {

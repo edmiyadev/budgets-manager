@@ -15,7 +15,6 @@ import {
 import { Button } from "@/components/ui/button"
 
 
-
 interface DataTablePaginationProps<TData> {
     table: Table<TData>
 }
@@ -25,7 +24,7 @@ export function DataTablePagination<TData>({
 }: DataTablePaginationProps<TData>) {
 
     return (
-        <div className="flex items-center justify-between px-2">
+        <div className="flex items-center justify-between px-2 py-2">
             <div className="text-muted-foreground flex-1 text-sm">
                 {table.getFilteredSelectedRowModel().rows.length} of{" "}
                 {table.getFilteredRowModel().rows.length} row(s) selected.
@@ -52,7 +51,7 @@ export function DataTablePagination<TData>({
                     </Select>
                 </div>
                 <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                    Page {table.getState().pagination.pageIndex} of{" "}
+                    Page {table.getState().pagination.pageIndex + 1} of{" "}
                     {table.getPageCount()}
                 </div>
                 <div className="flex items-center space-x-2">
@@ -60,7 +59,7 @@ export function DataTablePagination<TData>({
                         variant="outline"
                         size="icon"
                         className="hidden size-8 lg:flex"
-                        onClick={() => table.setPageIndex(1)}
+                        onClick={() => table.setPageIndex(0)}
                         disabled={!table.getCanPreviousPage()}
                     >
                         <span className="sr-only">Go to first page</span>
@@ -90,7 +89,7 @@ export function DataTablePagination<TData>({
                         variant="outline"
                         size="icon"
                         className="hidden size-8 lg:flex"
-                        onClick={() => table.setPageIndex(table.getPageCount())}
+                        onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                         disabled={!table.getCanNextPage()}
                     >
                         <span className="sr-only">Go to last page</span>
