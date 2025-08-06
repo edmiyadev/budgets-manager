@@ -36,6 +36,7 @@ import { DataTablePagination } from "@/components/pagination"
 import { getPaginatedCategories } from "@/actions/categories/categories-pagination"
 import { Category } from "@/types/category"
 import { useCallback, useEffect, useMemo, useState } from "react"
+import "@/styles/spinner.css"
 
 interface DataTableProps<TValue> {
   columns: ColumnDef<Category, TValue>[]
@@ -201,34 +202,47 @@ export function DataTable<TValue>({
                 </TableRow>
               ))}
             </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
+            {dataQuery.isFetching ?
+              (
+                <TableBody>
+                  <TableRow>
+                    <TableCell colSpan={columns.length} className="h-24 text-center">
+                      <div className="flex items-center justify-center">
+                        <div className="loader"></div>
+                      </div>
+                    </TableCell>
                   </TableRow>
-                ))
+                </TableBody>
               ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    No results.
-                  </TableCell>
-                </TableRow>
+                <TableBody>
+                  {table.getRowModel().rows?.length ? (
+                    table.getRowModel().rows.map((row) => (
+                      <TableRow
+                        key={row.id}
+                        data-state={row.getIsSelected() && "selected"}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id}>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={columns.length}
+                        className="h-24 text-center"
+                      >
+                        No results.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
               )}
-            </TableBody>
           </Table>
         </div>
         <DataTablePagination table={table} />
