@@ -25,6 +25,6 @@ model Category {
 }
 
 enum Type {
-  INCOME
-  EXPENSE
+  income
+  expense
 }

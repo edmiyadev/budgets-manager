@@ -5,62 +5,62 @@ const categories: Prisma.CategoryCreateInput[] = [
   {
     name: "Food & Dining",
     amount: 316,
-    type: Type.EXPENSE,
+    type: Type.income,
   },
   {
     name: "Salary",
     amount: 242,
-    type: Type.INCOME,
+    type: Type.income,
   },
   {
     name: "Transportation",
     amount: 837,
-    type: Type.EXPENSE,
+    type: Type.expense,
   },
   {
     name: "Freelance",
     amount: 874,
-    type: Type.INCOME,
+    type: Type.income,
   },
   {
     name: "Entertainment",
     amount: 721,
-    type: Type.EXPENSE,
+    type: Type.expense,
   },
   {
     name: "Investment Returns",
     amount: 1500,
-    type: Type.INCOME,
+    type: Type.income,
   },
   {
     name: "Shopping",
     amount: 450,
-    type: Type.EXPENSE,
+    type: Type.expense,
   },
   {
     name: "Utilities",
     amount: 320,
-    type: Type.EXPENSE,
+    type: Type.expense,
   },
   {
     name: "Healthcare",
     amount: 280,
-    type: Type.EXPENSE,
+    type: Type.expense,
   },
   {
     name: "Education",
     amount: 600,
-    type: Type.EXPENSE,
+    type: Type.expense,
   },
   {
-    name: "Rent INCOME",
+    name: "Rent",
     amount: 1200,
-    type: Type.INCOME,
+    type: Type.income,
   },
   {
     name: "Insurance",
     amount: 150,
-    type: Type.EXPENSE,
+    type: Type.expense,
   },
 ];
 

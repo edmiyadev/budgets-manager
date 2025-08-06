@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "public"."Type" AS ENUM ('INCOME', 'EXPENSE');
+CREATE TYPE "public"."Type" AS ENUM ('income', 'expense');
 
 -- CreateTable
 CREATE TABLE "public"."Category" (

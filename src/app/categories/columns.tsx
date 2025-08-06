@@ -10,15 +10,15 @@ import { Badge } from "@/components/ui/badge"
 
 interface StyleProps {
   type: {
-    INCOME: string
-    EXPENSE: string
+    income: string
+    expense: string
   }
 }
 
 const style: StyleProps = {
   type: {
-    INCOME: "text-green-800 bg-green-200 dark:bg-green-100",
-    EXPENSE: "text-red-800 bg-red-200 dark:bg-red-100",
+    income: "text-green-800 bg-green-200 dark:bg-green-100",
+    expense: "text-red-800 bg-red-200 dark:bg-red-100",
   }
 }
 
