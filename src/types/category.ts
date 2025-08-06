@@ -8,3 +8,9 @@ export interface Category {
   createdAt?: Date,
   updatedAt?: Date,
 }
+
+export interface CategoryWithPagination {
+  rows: Category[];
+  pageCount: number ;
+  rowCount: number;
+}

@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Category } from "@/types/category"
 import { CategoryModal } from "@/app/categories/category-modal"
 import { Badge } from "@/components/ui/badge"
+import { useCategories } from "@/hooks/categories/useCategories"
 
 interface StyleProps {
   type: {
@@ -21,6 +22,12 @@ const style: StyleProps = {
     expense: "text-red-800 bg-red-200 dark:bg-red-100",
   }
 }
+
+// Hook para manejar las categorías
+const useDeleteCategory = () => {
+  const { delete: deleteMutation } = useCategories(1, 10); // Los valores de paginación no importan para delete
+  return deleteMutation;
+};
 
 export const columns: ColumnDef<Category>[] = [
   {
@@ -99,6 +106,17 @@ export const columns: ColumnDef<Category>[] = [
     enableHiding: true,
     cell: ({ row }) => {
       const category = row.original
+      const deleteMutation = useDeleteCategory()
+
+      const handleDelete = async () => {
+        if (window.confirm(`¿Estás seguro de que quieres eliminar la categoría "${category.name}"?`)) {
+          try {
+            await deleteMutation.mutateAsync(category.id)
+          } catch (error) {
+            console.error('Error deleting category:', error)
+          }
+        }
+      }
 
       return (
         <div className="flex items-center justify-center gap-2">
@@ -110,9 +128,16 @@ export const columns: ColumnDef<Category>[] = [
           <Button
             variant="ghost"
             onClick={() => {
-              // TODO: Implement delete functionality
-              console.log("Delete category:", category)
+              deleteMutation.mutate(category.id, {
+                onSuccess: () => {
+                  console.log("Category deleted successfully");
+                },
+                onError: (error) => {
+                  console.error("Error deleting category:", error);
+                }
+              })
             }}
+            disabled={deleteMutation.isPending}
           >
             <Trash2Icon className="text-destructive" />
           </Button>

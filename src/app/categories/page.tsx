@@ -6,7 +6,7 @@ import { columns } from "@/app/categories/columns"
 import { CategoryModal } from "@/app/categories/category-modal"
 
 export default async function CategoriesPage() {
-    54
+
     return (
         <SidebarProvider
             style={

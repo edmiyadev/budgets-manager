@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/select"
 import { useState } from "react"
 import { Category } from "@/types/category"
+import { useCategories } from "@/hooks/categories/useCategories"
 
 interface Props {
     variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"
@@ -42,6 +43,7 @@ interface Props {
 }
 
 const formSchema = z.object({
+    id: z.string().optional(),
     name: z.string().min(2).max(50),
     amount: z.number().min(0, "Amount must be a positive number"),
     type: z.enum(["income", "expense"]),
@@ -56,23 +58,35 @@ export function CategoryModal({
 }: Props) {
 
     const [open, setOpen] = useState(false);
+    const { createUpdate } = useCategories(0, 10);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
+            id: category?.id || undefined,
             name: category?.name || "",
             amount: category?.amount || 0,
             type: category?.type || "income",
         },
     })
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        // Do something with the form values.
-        // ✅ This will be type-safe and validated.
-        setOpen(false);
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        const formData = values;
 
-        form.reset();
-        console.log(values)
+        if (category?.id !== undefined) {
+            formData.id = category.id;
+        }
+
+        createUpdate.mutate(formData, {
+            onSuccess: () => {
+                console.log("Category created/updated successfully");
+                setOpen(false);
+                form.reset();
+            },
+            onError: (error) => {
+                console.error("Error:", error);
+            },
+        });
     }
 
     const title = mode === 'create' ? 'Create Category' : 'Edit Category'

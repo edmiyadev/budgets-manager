@@ -13,7 +13,7 @@ import {
   VisibilityState,
 } from "@tanstack/react-table"
 import { ChevronDown } from "lucide-react"
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query'
 import { usePathname, useSearchParams, useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
@@ -33,10 +33,11 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { DataTablePagination } from "@/components/pagination"
-import { getPaginatedCategories } from "@/actions/categories/categories-pagination"
+import { useCategoriesStore } from "@/store/category.store"
 import { Category } from "@/types/category"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import "@/styles/spinner.css"
+import { useCategories } from "@/hooks/categories/useCategories"
 
 interface DataTableProps<TValue> {
   columns: ColumnDef<Category, TValue>[]
@@ -66,14 +67,13 @@ export function DataTable<TValue>({
     pageSize: currentPageSize,
   })
 
-  const dataQuery = useQuery({
-    queryKey: ['categories', currentPage, currentPageSize],
-    queryFn: () => getPaginatedCategories({
-      pageIndex: currentPage - 1,
-      pageSize: currentPageSize
-    }),
-    placeholderData: keepPreviousData,
-  })
+  const { dataQuery } = useCategories(currentPage, currentPageSize);
+
+  // const dataQuery = useQuery({
+  //   queryKey: ['categories', currentPage, currentPageSize],
+  //   queryFn: () => getCategories(currentPage - 1, currentPageSize),
+  //   placeholderData: keepPreviousData,
+  // })
 
 
   const redirectToValidPage = useCallback((pageIndex: number, pageSize: number) => {
@@ -101,8 +101,8 @@ export function DataTable<TValue>({
   const table = useReactTable<Category>({
     data: dataQuery.data?.rows ?? defaultData,
     columns,
-    pageCount: dataQuery.data?.pageCount ?? 0,
-    rowCount: dataQuery.data?.rowCount ?? 0,
+    pageCount: dataQuery.data?.pageCount,
+    rowCount: dataQuery.data?.rowCount,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
