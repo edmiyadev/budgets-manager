@@ -5,9 +5,10 @@ import { ArrowUpDown, Edit2Icon, Trash2Icon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Category } from "@/types/category"
-import { CategoryModal } from "@/app/categories/category-modal"
+import { Modal } from "@/components/modal"
 import { Badge } from "@/components/ui/badge"
 import { useCategories } from "@/hooks/categories/useCategories"
+import { CategoryForm } from "./category-form"
 
 interface StyleProps {
   type: {
@@ -121,9 +122,11 @@ export const columns: ColumnDef<Category>[] = [
       return (
         <div className="flex items-center justify-center gap-2">
 
-          <CategoryModal variant="ghost" mode="edit" category={category}>
+          <Modal 
+          FormComponent={CategoryForm}
+          variant="ghost" mode="edit" category={category}>
             <Edit2Icon className="text-primary" />
-          </CategoryModal>
+          </Modal>
 
           <Button
             variant="ghost"

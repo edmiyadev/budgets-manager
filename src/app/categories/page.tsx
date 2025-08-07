@@ -1,9 +1,10 @@
 import { AppSidebar } from "@/components/app-sidebar"
-import { DataTable } from "@/app/categories/data-table"
+import { DataTable } from "@/components/categories/data-table"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { columns } from "@/app/categories/columns"
-import { CategoryModal } from "@/app/categories/category-modal"
+import { columns } from "@/components/categories/columns"
+import { Modal } from "@/components/modal"
+import { CategoryForm } from "@/components/categories/category-form"
 
 export default async function CategoriesPage() {
 
@@ -24,7 +25,9 @@ export default async function CategoriesPage() {
                         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
                             <div className="px-4 lg:px-6">
                                 <div className="flex flex-col items-end">
-                                    <CategoryModal />
+                                    <Modal
+                                        FormComponent={CategoryForm}
+                                    />
                                 </div>
                                 <DataTable columns={columns} />
                             </div>

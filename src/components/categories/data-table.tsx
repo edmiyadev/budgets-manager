@@ -13,7 +13,6 @@ import {
   VisibilityState,
 } from "@tanstack/react-table"
 import { ChevronDown } from "lucide-react"
-import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query'
 import { usePathname, useSearchParams, useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
@@ -58,6 +57,8 @@ export function DataTable<TValue>({
   const currentPage = Number(searchParams.get('page')) || DEFAULT_PAGE;
   const currentPageSize = Number(searchParams.get('take')) || DEFAULT_PAGE_SIZE;
 
+  const { dataQuery } = useCategories(currentPage, currentPageSize);
+
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -66,14 +67,6 @@ export function DataTable<TValue>({
     pageIndex: currentPage - 1,
     pageSize: currentPageSize,
   })
-
-  const { dataQuery } = useCategories(currentPage, currentPageSize);
-
-  // const dataQuery = useQuery({
-  //   queryKey: ['categories', currentPage, currentPageSize],
-  //   queryFn: () => getCategories(currentPage - 1, currentPageSize),
-  //   placeholderData: keepPreviousData,
-  // })
 
 
   const redirectToValidPage = useCallback((pageIndex: number, pageSize: number) => {
