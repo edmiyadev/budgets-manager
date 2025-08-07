@@ -4,9 +4,9 @@ import prisma from "@/lib/prisma";
 import z from "zod";
 
 const categorySchema = z.object({
-  id: z.string().uuid().optional().nullable(),
+  id: z.uuid().optional().nullable(),
   name: z.string().min(1, "Name is required"),
-  amount: z.number().min(0, "Amount must be a positive number"),
+  amount: z.number().min(1, "Amount must be a positive number"),
   type: z.enum(["income", "expense"]),
 });
 

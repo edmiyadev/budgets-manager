@@ -45,7 +45,7 @@ interface Props {
 const formSchema = z.object({
     id: z.string().optional(),
     name: z.string().min(2).max(50),
-    amount: z.number().min(0, "Amount must be a positive number"),
+    amount: z.number().min(1, "Amount must be a positive number"),
     type: z.enum(["income", "expense"]),
 })
 
@@ -65,7 +65,7 @@ export function CategoryModal({
         defaultValues: {
             id: category?.id || undefined,
             name: category?.name || "",
-            amount: category?.amount || 0,
+            amount: category?.amount || undefined,
             type: category?.type || "income",
         },
     })
@@ -137,8 +137,8 @@ export function CategoryModal({
                                                 placeholder="100"
                                                 type="number"
                                                 min={0}
-                                                minLength={0}
                                                 {...field}
+                                                value={field.value || ''}
                                                 onChange={(e) => field.onChange(Number(e.target.value))}
                                             />
                                         </FormControl>
@@ -172,7 +172,7 @@ export function CategoryModal({
 
                         <DialogFooter>
                             <DialogClose asChild>
-                                <Button variant="outline" type="button">Cancel</Button>
+                                <Button onClick={() => form.reset()} variant="outline" type="button">Cancel</Button>
                             </DialogClose>
                             <Button type="submit">{submitLabel}</Button>
                         </DialogFooter>
