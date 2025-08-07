@@ -79,12 +79,11 @@ export function CategoryModal({
 
         createUpdate.mutate(formData, {
             onSuccess: () => {
-                console.log("Category created/updated successfully");
                 setOpen(false);
                 form.reset();
             },
             onError: (error) => {
-                console.error("Error:", error);
+                console.error("Error creating/updating category:", error);
             },
         });
     }

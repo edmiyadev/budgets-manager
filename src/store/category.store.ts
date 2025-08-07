@@ -42,14 +42,12 @@ export const useCategoriesStore = create<CategoriesState>()((set, get) => ({
       set({ categories: data });
       return data;
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching categories:", error);
       return undefined;
     }
   },
 
   createUpdateCategory: async (formData) => {
-    console.log("categorias antes", get().categories);
-
     try {
       const data = await createUpdateCategory(formData);
 
@@ -76,8 +74,6 @@ export const useCategoriesStore = create<CategoriesState>()((set, get) => ({
           };
         }
       });
-      console.log("categorias despues", get().categories);
-
       return get().categories;
     } catch (error) {
       console.error("Error creating/updating category:", error);
