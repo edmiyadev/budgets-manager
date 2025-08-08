@@ -24,9 +24,8 @@ const style: StyleProps = {
   }
 }
 
-// Hook para manejar las categorías
 const useDeleteCategory = () => {
-  const { delete: deleteMutation } = useCategories(1, 10); // Los valores de paginación no importan para delete
+  const { delete: deleteMutation } = useCategories();
   return deleteMutation;
 };
 
@@ -109,22 +108,15 @@ export const columns: ColumnDef<Category>[] = [
       const category = row.original
       const deleteMutation = useDeleteCategory()
 
-      const handleDelete = async () => {
-        if (window.confirm(`¿Estás seguro de que quieres eliminar la categoría "${category.name}"?`)) {
-          try {
-            await deleteMutation.mutateAsync(category.id)
-          } catch (error) {
-            console.error('Error deleting category:', error)
-          }
-        }
-      }
-
       return (
         <div className="flex items-center justify-center gap-2">
 
-          <Modal 
-          FormComponent={CategoryForm}
-          variant="ghost" mode="edit" category={category}>
+          <Modal
+            name="category"
+            FormComponent={CategoryForm}
+            variant="ghost"
+            mode="edit"
+            data={category}>
             <Edit2Icon className="text-primary" />
           </Modal>
 

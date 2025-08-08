@@ -3,7 +3,6 @@
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
-
 import {
     Form,
     FormControl,
@@ -22,7 +21,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { Category } from "@/types/category"
 import { useCategories } from "@/hooks/categories/useCategories"
-import { useState } from "react"
 
 const formSchema = z.object({
     id: z.string().optional(),
@@ -32,35 +30,35 @@ const formSchema = z.object({
 })
 
 interface Props {
-    category?: Category | null
+    idForm?: string
+    data?: Category | null,
+    onClose: (open: boolean) => void
 }
 
 
-export const CategoryForm = ({ category }: Props) => {
-    const [open, setOpen] = useState(false);
-    const { createUpdate } = useCategories(0, 10);
-
+export const CategoryForm = ({ data, idForm, onClose }: Props) => {
+    const { createUpdate } = useCategories();
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            id: category?.id || undefined,
-            name: category?.name || "",
-            amount: category?.amount || undefined,
-            type: category?.type || "income",
+            id: data?.id || undefined,
+            name: data?.name || "",
+            amount: data?.amount || undefined,
+            type: data?.type || "income",
         },
     })
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         const formData = values;
 
-        if (category?.id !== undefined) {
-            formData.id = category.id;
+        if (data?.id !== undefined) {
+            formData.id = data.id;
         }
 
         createUpdate.mutate(formData, {
             onSuccess: () => {
-                setOpen(false);
+                onClose(false);
                 form.reset();
             },
             onError: (error) => {
@@ -71,7 +69,7 @@ export const CategoryForm = ({ category }: Props) => {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8" id={idForm}>
                 {/* form fields */}
                 <FormField
                     control={form.control}

@@ -1,7 +1,7 @@
 import { useCategoriesStore, CategoryFormData } from "@/store/category.store";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
-export const useCategories = (pageIndex: number, pageSize: number) => {
+export const useCategories = (pageIndex = 0, pageSize = 10) => {
 
     const queryClient = useQueryClient();
     const { getCategories, createUpdateCategory, deleteCategory } = useCategoriesStore();

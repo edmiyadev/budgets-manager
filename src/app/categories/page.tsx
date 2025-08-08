@@ -26,6 +26,7 @@ export default async function CategoriesPage() {
                             <div className="px-4 lg:px-6">
                                 <div className="flex flex-col items-end">
                                     <Modal
+                                        name="category"
                                         FormComponent={CategoryForm}
                                     />
                                 </div>
