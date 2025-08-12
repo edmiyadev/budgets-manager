@@ -46,7 +46,7 @@ export function Modal<T = any>({
             <DialogTrigger className="cursor-pointer" asChild>
                 <Button size={size} variant={variant}>{children ?? title}</Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-fit max-w-[90vw]">
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                     <DialogDescription>

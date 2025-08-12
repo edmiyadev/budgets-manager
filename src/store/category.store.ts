@@ -1,7 +1,8 @@
 import { getPaginatedCategories } from "@/actions/categories/categories-pagination";
 import { createUpdateCategory } from "@/actions/categories/create-update-category";
 import { deleteCategory } from "@/actions/categories/delete-category";
-import { CategoryWithPagination } from "@/types/category";
+import { getCategories } from "@/actions/categories/get-categories";
+import { Category, CategoryWithPagination } from "@/types/category";
 import { create } from "zustand";
 
 export interface CategoryFormData {
@@ -13,10 +14,11 @@ export interface CategoryFormData {
 
 type CategoriesState = {
   categories: CategoryWithPagination;
-  getCategories: (
+  getPaginatedCategories: (
     pageIndex: number,
     pageSize: number
   ) => Promise<CategoryWithPagination | undefined>;
+  getCategories: () => Promise<Category[] | undefined>;
   createUpdateCategory: (
     formData: CategoryFormData
   ) => Promise<CategoryWithPagination | undefined>;
@@ -32,7 +34,7 @@ const initialState: CategoryWithPagination = {
 export const useCategoriesStore = create<CategoriesState>()((set, get) => ({
   categories: initialState,
 
-  getCategories: async (pageIndex, pageSize) => {
+  getPaginatedCategories: async (pageIndex, pageSize) => {
     try {
       const data = await getPaginatedCategories({
         pageIndex,
@@ -94,5 +96,25 @@ export const useCategoriesStore = create<CategoriesState>()((set, get) => ({
       },
     }));
     return true;
+  },
+
+  getCategories: async () => {
+    try {
+      const response = await getCategories();
+      if (!response) return undefined;
+
+      const categories = response.data;
+      set({
+        categories: {
+          rows: categories,
+          pageCount: 1,
+          rowCount: categories.length,
+        },
+      });
+      return categories;
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      return undefined;
+    }
   },
 }));
