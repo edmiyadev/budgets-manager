@@ -5,7 +5,11 @@ import prisma from "@/lib/prisma";
 export const getCategories = async () => {
   try {
     // get categories
-    const categories = await prisma.category.findMany();
+    const categories = await prisma.category.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
 
     return {
       data: categories,

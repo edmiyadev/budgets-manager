@@ -15,6 +15,9 @@ export const getPaginatedCategories = async ({
     const categories = await prisma.category.findMany({
       take: pageSize,
       skip: pageIndex * pageSize,
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
     // get totalPages

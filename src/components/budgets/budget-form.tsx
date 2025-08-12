@@ -22,14 +22,14 @@ import { useEffect } from "react"
 const formSchema = z.object({
     id: z.string().optional(),
     title: z.string().min(2).max(50),
-    description: z.string().min(2).max(250).optional(),
+    description: z.string().max(250).optional(),
     startDate: z.date(),
     endDate: z.date().optional(),
-    categories: z.array(z.object({
+    budgetLines: z.array(z.object({
         id: z.string(),
         name: z.string(),
         amount: z.number().optional(),
-    })).min(1, "At least one category is required"),
+    })).min(1, "At least one budget line is required"),
     totalExpected: z.number().min(0, "Total expected must be a positive number"),
 })
 
@@ -46,16 +46,20 @@ export const BudgetForm = ({ idForm, data, onClose }: Props) => {
         defaultValues: {
             id: data?.id || undefined,
             title: data?.title || "",
+            description: data?.description || "",
             startDate: data?.startDate ? new Date(data.startDate) : new Date(),
             endDate: data?.endDate ? new Date(data.endDate) : new Date(),
-            categories: data?.categories || [],
+            budgetLines: data?.budgetLines || [],
             totalExpected: data?.totalExpected || 0,
         },
     })
 
-    const watchedCategories = form.watch("categories");
+    const watchedBudgetLines = form.watch("budgetLines")
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
+        console.log("🚀 onSubmit ejecutado con valores:", values);
+        console.log("🔍 Errores del formulario:", form.formState.errors);
+        console.log("📊 Budget Lines:", values.budgetLines);
         const formData = values;
 
         if (data?.id !== undefined) {
@@ -68,20 +72,19 @@ export const BudgetForm = ({ idForm, data, onClose }: Props) => {
         //         form.reset();
         //     },
         //     onError: (error) => {
-        //         console.error("Error creating/updating category:", error);
+        //         console.error("Error creating/updating budget:", error);
         //     },
         // });
     }
-
-    console.log(watchedCategories);
+    console.log("Form data:", form.getValues());
 
     useEffect(() => {
-        const total = watchedCategories.reduce((sum, category) => {
-            return sum + (category.amount || 0);
+        const total = watchedBudgetLines?.reduce((sum, line) => {
+            return sum + (line?.amount || 0);
         }, 0);
 
         form.setValue("totalExpected", total);
-    }, [watchedCategories, form]);
+    }, [watchedBudgetLines, form]);
 
     return (
         <Form {...form}>
@@ -138,7 +141,7 @@ export const BudgetForm = ({ idForm, data, onClose }: Props) => {
 
                 <FormField
                     control={form.control}
-                    name="categories"
+                    name="budgetLines"
                     render={({ field }) => (
                         <Repeater field={field} />
                     )}

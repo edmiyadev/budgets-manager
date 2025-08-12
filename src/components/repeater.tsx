@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { FormControl, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -14,22 +14,39 @@ import { Category } from "@/types/category";
 import { Trash2Icon } from "lucide-react";
 
 interface RepeaterItem {
-    id: number;
+    id: string;
     name: string;
     amount: number;
 }
 
 export const Repeater = ({ field }: any) => {
-    const [items, setItems] = useState<RepeaterItem[]>([{ id: Date.now(), name: "", amount: 0 }]);
+    // Inicializar correctamente con datos del formulario
+    const [items, setItems] = useState<RepeaterItem[]>(() => {
+        if (field.value && field.value.length > 0) {
+            return field.value;
+        }
+        // Si no hay datos, crear item por defecto y sincronizar inmediatamente
+        const defaultItem = { id: crypto.randomUUID(), name: "", amount: 0 };
+        // Notificar al formulario sobre el item por defecto
+        setTimeout(() => field.onChange([defaultItem]), 0);
+        return [defaultItem];
+    });
+
+    // Sincronizar cuando cambian los datos del formulario
+    useEffect(() => {
+        if (field.value && Array.isArray(field.value)) {
+            setItems(field.value);
+        }
+    }, [field.value]);
 
     const addNewLine = () => {
-        const newItem = { id: Date.now(), name: "", amount: 0 };
+        const newItem = { id: crypto.randomUUID(), name: "", amount: 0 };
         const updatedItems = [...items, newItem];
         setItems(updatedItems);
         field.onChange(updatedItems);
     };
 
-    const removeItem = (id: number) => {
+    const removeItem = (id: string) => {
         if (items.length > 1) {
             const updatedItems = items.filter(item => item.id !== id);
             setItems(updatedItems);
@@ -37,7 +54,7 @@ export const Repeater = ({ field }: any) => {
         }
     };
 
-    const updateItem = (id: number, updates: any) => {
+    const updateItem = (id: string, updates: any) => {
         const updatedItems = items.map(item =>
             item.id === id ? { ...item, ...updates } : item
         );
@@ -83,9 +100,9 @@ const RepeaterLine = ({ item, items, onUpdate, onRemove }: RepeaterLineProps) =>
         const category = categories?.find((cat) => cat.id === categoryId);
         if (category) {
             onUpdate({
-                id: category.id,
+                id: categoryId,
                 name: category.name,
-                amount: category.amount || 0
+                amount: item.amount || category.amount || 0
             });
         }
     };
@@ -97,7 +114,7 @@ const RepeaterLine = ({ item, items, onUpdate, onRemove }: RepeaterLineProps) =>
     return (
         <div className="flex flex-row justify-between items-center gap-4">
             <FormItem className="flex-2">
-                <Select onValueChange={handleCategoryChange} value={String(item.id) || ""}>
+                <Select onValueChange={handleCategoryChange} value={item.id || ""}>
                     <FormControl>
                         <SelectTrigger className="w-48 h-10">
                             <SelectValue placeholder="Select category" />
@@ -108,7 +125,7 @@ const RepeaterLine = ({ item, items, onUpdate, onRemove }: RepeaterLineProps) =>
                             <SelectItem
                                 key={category.id}
                                 value={category.id}
-                                disabled={items.some(i => String(i.id) === String(category.id) && String(i.id) !== String(item.id))}>
+                                disabled={items.some(i => i.id === category.id && i.id !== item.id)}>
                                 {category.name}
                             </SelectItem>
                         ))}
