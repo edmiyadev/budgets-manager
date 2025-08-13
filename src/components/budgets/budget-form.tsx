@@ -17,18 +17,18 @@ import { Textarea } from "../ui/textarea"
 import CalendarForm from "../calendar-form"
 import { Repeater } from "@/components/repeater"
 import { useEffect } from "react"
-
+import { useBudgets } from "@/hooks/budgets/useBudgets"
 
 const formSchema = z.object({
     id: z.string().optional(),
-    title: z.string().min(2).max(50),
-    description: z.string().max(250).optional(),
-    startDate: z.date(),
+    title: z.string().min(2, "Title must be at least 2 characters").max(50, "Title must be less than 50 characters"),
+    description: z.string().max(250, "Description must be less than 250 characters").optional(),
+    startDate: z.date({ message: "Start date is required" }),
     endDate: z.date().optional(),
     budgetLines: z.array(z.object({
         id: z.string(),
         name: z.string(),
-        amount: z.number().optional(),
+        amount: z.number().min(0, "Amount must be positive").optional(),
     })).min(1, "At least one budget line is required"),
     totalExpected: z.number().min(0, "Total expected must be a positive number"),
 })
@@ -40,6 +40,7 @@ interface Props {
 }
 
 export const BudgetForm = ({ idForm, data, onClose }: Props) => {
+    const { createUpdate } = useBudgets()
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -48,8 +49,12 @@ export const BudgetForm = ({ idForm, data, onClose }: Props) => {
             title: data?.title || "",
             description: data?.description || "",
             startDate: data?.startDate ? new Date(data.startDate) : new Date(),
-            endDate: data?.endDate ? new Date(data.endDate) : new Date(),
-            budgetLines: data?.budgetLines || [],
+            endDate: data?.endDate ? new Date(data.endDate) : undefined,
+            budgetLines: data?.budgetLines.map(line => ({
+                id: line.categoryId,
+                name: line.category.name,
+                amount: line.amount,
+            })) || [],
             totalExpected: data?.totalExpected || 0,
         },
     })
@@ -57,31 +62,34 @@ export const BudgetForm = ({ idForm, data, onClose }: Props) => {
     const watchedBudgetLines = form.watch("budgetLines")
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log("🚀 onSubmit ejecutado con valores:", values);
-        console.log("🔍 Errores del formulario:", form.formState.errors);
-        console.log("📊 Budget Lines:", values.budgetLines);
-        const formData = values;
-
-        if (data?.id !== undefined) {
-            formData.id = data.id;
+        const formData = {
+            id: values.id,
+            title: values.title,
+            description: values.description,
+            startDate: values.startDate.toISOString(),
+            endDate: values.endDate?.toISOString(),
+            totalExpected: values.totalExpected,
+            budgetLines: values.budgetLines.map(line => ({
+                categoryId: line.id,
+                amount: line.amount || 0,
+            })),
         }
 
-        // createUpdate.mutate(formData, {
-        //     onSuccess: () => {
-        //         onClose(false);
-        //         form.reset();
-        //     },
-        //     onError: (error) => {
-        //         console.error("Error creating/updating budget:", error);
-        //     },
-        // });
+        createUpdate.mutate(formData, {
+            onSuccess: () => {
+                onClose(false);
+                form.reset();
+            },
+            onError: (error) => {
+                console.error("Error creating/updating budget:", error);
+            },
+        });
     }
-    console.log("Form data:", form.getValues());
 
     useEffect(() => {
         const total = watchedBudgetLines?.reduce((sum, line) => {
             return sum + (line?.amount || 0);
-        }, 0);
+        }, 0) || 0;
 
         form.setValue("totalExpected", total);
     }, [watchedBudgetLines, form]);
@@ -89,7 +97,6 @@ export const BudgetForm = ({ idForm, data, onClose }: Props) => {
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8" id={idForm}>
-                {/* form fields */}
                 <FormField
                     control={form.control}
                     name="title"
@@ -109,6 +116,7 @@ export const BudgetForm = ({ idForm, data, onClose }: Props) => {
                     name="description"
                     render={({ field }) => (
                         <FormItem>
+                            <FormLabel>Description</FormLabel>
                             <FormControl>
                                 <Textarea
                                     placeholder="Budget for trip to Tokyo ..."
@@ -154,12 +162,12 @@ export const BudgetForm = ({ idForm, data, onClose }: Props) => {
                         <FormItem>
                             <div className="flex justify-between">
                                 <FormLabel className="text-xl">Total Expected</FormLabel>
-                                <FormLabel className="text-xl">RD$ {field.value}</FormLabel>
+                                <FormLabel className="text-xl">RD$ {field.value.toFixed(2)}</FormLabel>
                             </div>
                         </FormItem>
                     )}
                 />
             </form>
-        </Form >
+        </Form>
     )
 }

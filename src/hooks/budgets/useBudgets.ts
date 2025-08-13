@@ -1,96 +1,55 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useBudgetsStore, BudgetFormData } from "@/store/budget.store";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  getBudgets,
-  getBudgetById,
-} from "@/actions/budgets/get-budgets";
-import {
-  createBudget,
-  updateBudget,
-} from "@/actions/budgets/create-update-budget";
-import { deleteBudget } from "@/actions/budgets/delete-budget";
-import {
-  getBudgetSummaries,
-  getBudgetSummaryById,
-} from "@/actions/budgets/budget-summary";
-import type { CreateBudget, UpdateBudget } from "@/types/budget";
 
 export const useBudgets = () => {
-  return useQuery({
+  const queryClient = useQueryClient();
+  const {
+    getBudgets,
+    createUpdateBudget,
+    deleteBudget,
+  } = useBudgetsStore();
+
+  const dataQuery = useQuery({
     queryKey: ["budgets"],
-    queryFn: getBudgets,
+    queryFn: () => getBudgets(),
+    placeholderData: keepPreviousData,
   });
-};
 
-export const useBudget = (id: string) => {
-  return useQuery({
-    queryKey: ["budget", id],
-    queryFn: () => getBudgetById(id),
-    enabled: !!id,
-  });
-};
-
-export const useBudgetSummaries = () => {
-  return useQuery({
-    queryKey: ["budget-summaries"],
-    queryFn: getBudgetSummaries,
-  });
-};
-
-export const useBudgetSummary = (id: string) => {
-  return useQuery({
-    queryKey: ["budget-summary", id],
-    queryFn: () => getBudgetSummaryById(id),
-    enabled: !!id,
-  });
-};
-
-export const useCreateBudget = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: CreateBudget) => createBudget(data),
-    onSuccess: () => {
+  const createUpdateMutation = useMutation({
+    mutationFn: (formData: BudgetFormData) => createUpdateBudget(formData),
+    onSuccess: (_, variables) => {
+      // Invalidar y refetch automáticamente
       queryClient.invalidateQueries({ queryKey: ["budgets"] });
-      queryClient.invalidateQueries({ queryKey: ["budget-summaries"] });
-      toast.success("Budget created successfully");
+      toast.success(variables.id ? "Budget updated successfully" : "Budget created successfully");
     },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to create budget");
-    },
-  });
-};
-
-export const useUpdateBudget = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: UpdateBudget) => updateBudget(data),
-    onSuccess: (updatedBudget) => {
-      queryClient.invalidateQueries({ queryKey: ["budgets"] });
-      queryClient.invalidateQueries({ queryKey: ["budget", updatedBudget.id] });
-      queryClient.invalidateQueries({ queryKey: ["budget-summaries"] });
-      queryClient.invalidateQueries({ queryKey: ["budget-summary", updatedBudget.id] });
-      toast.success("Budget updated successfully");
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to update budget");
+    onError: (error) => {
+      console.error("Error creating/updating budget:", error);
+      toast.error("Failed to save budget");
     },
   });
-};
 
-export const useDeleteBudget = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
+  const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteBudget(id),
     onSuccess: () => {
+      // Invalidar y refetch automáticamente
       queryClient.invalidateQueries({ queryKey: ["budgets"] });
-      queryClient.invalidateQueries({ queryKey: ["budget-summaries"] });
       toast.success("Budget deleted successfully");
     },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to delete budget");
+    onError: (error) => {
+      console.error("Error deleting budget:", error);
+      toast.error("Failed to delete budget");
     },
   });
+
+  return {
+    dataQuery,
+    createUpdate: createUpdateMutation,
+    delete: deleteMutation,
+  };
 };

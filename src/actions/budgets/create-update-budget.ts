@@ -1,135 +1,95 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { CreateBudget, UpdateBudget, Budget } from "@/types/budget";
-import { revalidatePath } from "next/cache";
+import { z } from "zod";
 
-export async function createBudget(data: CreateBudget): Promise<Budget> {
-  try {
-    const budget = await prisma.budget.create({
-      data: {
-        title: data.title,
-        description: data.description,
-        startDate: new Date(data.startDate),
-        endDate: data.endDate ? new Date(data.endDate) : null,
-        totalExpected: data.totalExpected,
-        budgetLines: {
-          create: data.budgetLines.map((line) => ({
-            amount: line.amount,
-            categoryId: line.categoryId,
-          })),
-        },
-      },
-      include: {
-        budgetLines: {
-          include: {
-            category: true,
-          },
-        },
-      },
-    });
+const budgetSchema = z.object({
+  id: z.string().optional().nullable(),
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  startDate: z.string().min(1, "Start date is required"),
+  endDate: z.string().optional(),
+  totalExpected: z.number().min(0, "Total expected must be a positive number"),
+  budgetLines: z
+    .array(
+      z.object({
+        categoryId: z.string("Invalid category ID"),
+        amount: z.number().min(0, "Amount must be a positive number"),
+      })
+    )
+    .min(1, "At least one budget line is required"),
+});
 
-    revalidatePath("/budgets");
+export async function createUpdateBudget(
+  formData: z.infer<typeof budgetSchema>
+) {
+  const formDataValidated = budgetSchema.safeParse(formData);
 
-    return {
-      id: budget.id,
-      title: budget.title,
-      description: budget.description,
-      startDate: budget.startDate.toISOString(),
-      endDate: budget.endDate?.toISOString() ?? null,
-      createdAt: budget.createdAt,
-      updatedAt: budget.updatedAt,
-      totalExpected: budget.totalExpected,
-      budgetLines: budget.budgetLines.map((line) => ({
-        id: line.id,
-        amount: line.amount,
-        budgetId: line.budgetId,
-        categoryId: line.categoryId,
-        createdAt: line.createdAt,
-        updatedAt: line.updatedAt,
-        category: {
-          id: line.category.id,
-          name: line.category.name,
-          amount: line.category.amount,
-          type: line.category.type as "income" | "expense",
-          createdAt: line.category.createdAt,
-          updatedAt: line.category.updatedAt,
-        },
-      })),
-    };
-  } catch (error) {
-    console.error("Error creating budget:", error);
-    throw new Error("Failed to create budget");
+  if (!formDataValidated.success) {
+    throw new Error(`Validation failed: ${formDataValidated.error.message}`);
   }
-}
 
-export async function updateBudget(data: UpdateBudget): Promise<Budget> {
+  const { id, budgetLines, ...budgetData } = formDataValidated.data;
+
   try {
-    // If budget lines are provided, we need to update them
-    if (data.budgetLines) {
-      // Delete existing budget lines and create new ones
-      await prisma.budgetLine.deleteMany({
-        where: { budgetId: data.id },
-      });
-    }
+    const result = await prisma.$transaction(async (tx) => {
+      let budget;
 
-    const budget = await prisma.budget.update({
-      where: { id: data.id },
-      data: {
-        ...(data.title && { title: data.title }),
-        ...(data.description !== undefined && { description: data.description }),
-        ...(data.startDate && { startDate: new Date(data.startDate) }),
-        ...(data.endDate !== undefined && { 
-          endDate: data.endDate ? new Date(data.endDate) : null 
-        }),
-        ...(data.budgetLines && {
-          budgetLines: {
-            create: data.budgetLines.map((line) => ({
-              amount: line.amount,
-              categoryId: line.categoryId,
-            })),
+      if (id) {
+        // Update existing budget
+        budget = await tx.budget.update({
+          where: { id },
+          data: {
+            ...budgetData,
+            startDate: new Date(budgetData.startDate),
+            endDate: budgetData.endDate ? new Date(budgetData.endDate) : null,
           },
-        }),
-      },
-      include: {
-        budgetLines: {
-          include: {
-            category: true,
+        });
+
+        // Delete existing budget lines
+        await tx.budgetLine.deleteMany({
+          where: { budgetId: id },
+        });
+      } else {
+        // Create new budget
+        budget = await tx.budget.create({
+          data: {
+            ...budgetData,
+            startDate: new Date(budgetData.startDate),
+            endDate: budgetData.endDate ? new Date(budgetData.endDate) : null,
+          },
+        });
+      }
+
+      // Create budget lines
+      await Promise.all(
+        budgetLines.map((line) =>
+          tx.budgetLine.create({
+            data: {
+              budgetId: budget.id,
+              categoryId: line.categoryId,
+              amount: line.amount,
+            },
+          })
+        )
+      );
+
+      // Return budget with lines
+      return await tx.budget.findUnique({
+        where: { id: budget.id },
+        include: {
+          budgetLines: {
+            include: {
+              category: true,
+            },
           },
         },
-      },
+      });
     });
 
-    revalidatePath("/budgets");
-
-    return {
-      id: budget.id,
-      title: budget.title,
-      description: budget.description,
-      startDate: budget.startDate.toISOString(),
-      endDate: budget.endDate?.toISOString() ?? null,
-      createdAt: budget.createdAt,
-      updatedAt: budget.updatedAt,
-      totalExpected: budget.totalExpected,
-      budgetLines: budget.budgetLines.map((line) => ({
-        id: line.id,
-        amount: line.amount,
-        budgetId: line.budgetId,
-        categoryId: line.categoryId,
-        createdAt: line.createdAt,
-        updatedAt: line.updatedAt,
-        category: {
-          id: line.category.id,
-          name: line.category.name,
-          amount: line.category.amount,
-          type: line.category.type as "income" | "expense",
-          createdAt: line.category.createdAt,
-          updatedAt: line.category.updatedAt,
-        },
-      })),
-    };
+    return result;
   } catch (error) {
-    console.error("Error updating budget:", error);
-    throw new Error("Failed to update budget");
+    console.error("Error creating/updating budget:", error);
+    throw new Error("Failed to create or update budget");
   }
 }

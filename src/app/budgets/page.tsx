@@ -1,17 +1,21 @@
+"use client"
+
 import { AppSidebar } from "@/components/app-sidebar"
 import { BudgetForm } from "@/components/budgets/budget-form"
-import { ChartAreaInteractive } from "@/components/chart-area-interactive"
-import { DataTable } from "@/components/data-table"
+import { BudgetCards } from "@/components/budgets/budget-cards"
 import { Modal } from "@/components/modal"
-import { SectionCards } from "@/components/section-cards"
 import { SiteHeader } from "@/components/site-header"
 import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar"
-
+import { useBudgets } from "@/hooks/budgets/useBudgets"
+import { useEffect } from "react"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function BudgetsPage() {
+  const { dataQuery } = useBudgets()
+
   return (
     <SidebarProvider
       style={
@@ -27,14 +31,22 @@ export default function BudgetsPage() {
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              {/* <DataTable data={data} /> */}
               <div className="px-4 lg:px-6">
-                <div className="flex flex-col items-end">
+                <div className="flex flex-col items-end mb-6">
                   <Modal
                     name="budget"
                     FormComponent={BudgetForm}
                   />
                 </div>
+                {dataQuery.isLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(6)].map((_, i) => (
+                      <Skeleton key={i} className="h-80 w-full" />
+                    ))}
+                  </div>
+                ) : (
+                  <BudgetCards budgets={dataQuery.data} />
+                )}
               </div>
             </div>
           </div>
