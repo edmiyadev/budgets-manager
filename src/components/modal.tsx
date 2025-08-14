@@ -12,6 +12,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { useBudgets } from "@/hooks/budgets/useBudgets"
 
 interface Props<T = any> {
     name: string
@@ -33,7 +34,7 @@ export function Modal<T = any>({
     mode = 'create',
 }: Props<T>) {
     const [open, setOpen] = useState(false);
-
+    
     const capilizeName = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
     const title = mode === 'create' ? `Create ${capilizeName(name)}` : `Edit ${capilizeName(name)}`
 
@@ -61,11 +62,11 @@ export function Modal<T = any>({
 
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="outline" type="button">
+                        <Button className="cursor-pointer" variant="outline" type="button">
                             Cancel
                         </Button>
                     </DialogClose>
-                    <Button type="submit" form={`${name}-form`}>{mode === 'create' ? 'Create' : 'Update'}</Button>
+                    <Button className="cursor-pointer" type="submit" form={`${name}-form`}> { mode === 'create' ? 'Create' : 'Update'}</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

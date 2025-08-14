@@ -10,9 +10,7 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar"
 import { useBudgets } from "@/hooks/budgets/useBudgets"
-import { useEffect } from "react"
-import { Skeleton } from "@/components/ui/skeleton"
-
+import { BudgetSkeletonCards } from "@/components/budgets/budget-skeleton-cards"
 export default function BudgetsPage() {
   const { dataQuery } = useBudgets()
 
@@ -39,13 +37,9 @@ export default function BudgetsPage() {
                   />
                 </div>
                 {dataQuery.isLoading ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {[...Array(6)].map((_, i) => (
-                      <Skeleton key={i} className="h-80 w-full" />
-                    ))}
-                  </div>
+                  <BudgetSkeletonCards />
                 ) : (
-                  <BudgetCards budgets={dataQuery.data} />
+                  <BudgetCards budgets={dataQuery.data ?? []} />
                 )}
               </div>
             </div>
